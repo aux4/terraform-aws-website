@@ -11,6 +11,14 @@ resource "aws_s3_bucket" "logs" {
   bucket = "${var.env}-logs.${var.website_domain}"
 }
 
+resource "aws_s3_bucket_ownership_controls" "logs" {
+  bucket = aws_s3_bucket.logs.bucket
+
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
 resource "aws_s3_bucket" "website" {
   bucket = var.env == "prod" ? var.website_domain : "${var.env}.${var.website_domain}"
 }
