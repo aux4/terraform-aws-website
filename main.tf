@@ -51,7 +51,7 @@ resource "aws_s3_bucket_public_access_block" "website" {
 
 resource "aws_s3_bucket_acl" "website" {
   bucket = aws_s3_bucket.website.bucket
-  acl = "public-read"
+  acl    = "public-read"
 
   depends_on = [
     aws_s3_bucket_ownership_controls.website,
@@ -74,13 +74,18 @@ resource "aws_s3_bucket_website_configuration" "website" {
 resource "aws_s3_bucket" "www" {
   bucket = var.env == "prod" ? "www.${var.website_domain}" : "www.${var.env}.${var.website_domain}"
 
-  website {
-    redirect_all_requests_to = var.env == "prod" ? "https://${var.website_domain}" : "https://${var.env}.${var.website_domain}"
-  }
-
   depends_on = [
     aws_s3_bucket.website
   ]
+}
+
+resource "aws_s3_bucket_website_configuration" "www" {
+  bucket = aws_s3_bucket.www.bucket
+
+  redirect_all_requests_to {
+    host_name = var.env == "prod" ? "https://${var.website_domain}" : "https://${var.env}.${var.website_domain}"
+    protocol  = "https"
+  }
 }
 
 resource "aws_s3_bucket_ownership_controls" "www" {
@@ -101,7 +106,7 @@ resource "aws_s3_bucket_public_access_block" "www" {
 
 resource "aws_s3_bucket_acl" "www" {
   bucket = aws_s3_bucket.www.bucket
-  acl = "public-read"
+  acl    = "public-read"
 
   depends_on = [
     aws_s3_bucket_ownership_controls.www,
