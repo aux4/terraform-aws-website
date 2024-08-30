@@ -19,6 +19,15 @@ resource "aws_s3_bucket_ownership_controls" "logs" {
   }
 }
 
+resource "aws_s3_bucket_acl" "logs" {
+  bucket = aws_s3_bucket.logs.bucket
+  acl    = "log-delivery-write"
+
+  depends_on = [
+    aws_s3_bucket_ownership_controls.logs
+  ]
+}
+
 resource "aws_s3_bucket" "website" {
   bucket = var.env == "prod" ? var.website_domain : "${var.env}.${var.website_domain}"
 }
