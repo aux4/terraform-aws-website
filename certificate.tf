@@ -1,5 +1,6 @@
 resource "aws_acm_certificate" "website_certificate" {
   domain_name       = var.env == "prod" ? "*.${var.website_domain}" : "*.${var.env}.${var.website_domain}"
+  subject_alternative_names = var.env == "prod" ? ["${var.website_domain}", "www.${var.website_domain}"] : ["${var.env}.${var.website_domain}", "www.${var.env}.${var.website_domain}"]
   validation_method = "DNS"
 }
 
