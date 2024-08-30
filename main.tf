@@ -11,9 +11,21 @@ resource "aws_s3_bucket" "logs" {
   bucket = "${var.env}-logs.${var.website_domain}"
 }
 
+resource "aws_s3_bucket_ownership_controls" "logs" {
+  bucket = aws_s3_bucket.logs.bucket
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
 resource "aws_s3_bucket_acl" "logs" {
   bucket = aws_s3_bucket.logs.bucket
   acl    = "log-delivery-write"
+
+  depends_on = [
+    aws_s3_bucket_ownership_controls.logs
+  ]
 }
 
 resource "aws_s3_bucket" "website" {
