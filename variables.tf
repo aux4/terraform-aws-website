@@ -22,7 +22,7 @@ variable "website_dist_folder" {
 variable "cloudfront_price_class" {
   description = "The CloudFront price class"
   type        = string
-  default     = "PriceClass_100"
+  default     = "PriceClass_All"
 }
 
 variable "route53_zone_id" {
