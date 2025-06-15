@@ -48,6 +48,10 @@ resource "aws_s3_bucket_policy" "website" {
     ]
 }
 POLICY
+
+  depends_on = [
+    aws_s3_bucket_public_access_block.website
+  ]
 }
 
 resource "aws_s3_bucket_ownership_controls" "website" {
