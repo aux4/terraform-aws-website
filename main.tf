@@ -141,6 +141,12 @@ resource "null_resource" "upload" {
   }
   depends_on = [aws_s3_bucket.website]
   provisioner "local-exec" {
-    command = "aws --profile ${var.aws_profile} s3 rm --recursive --exclude 'sitemap.xml' s3://${aws_s3_bucket.website.bucket} && aws --profile ${var.aws_profile} s3 cp --cache-control 'max-age=86400' --recursive ${var.website_dist_folder} s3://${aws_s3_bucket.website.bucket}"
+    command = <<EOT
+aws --profile ${var.aws_profile} s3 rm --recursive --exclude 'sitemap.xml' s3://${aws_s3_bucket.website.bucket} && \
+aws --profile ${var.aws_profile} s3 cp --cache-control 'max-age=31536000' --content-type 'application/javascript' --recursive --exclude '*' --include '*.js' ${var.website_dist_folder} s3://${aws_s3_bucket.website.bucket} && \
+aws --profile ${var.aws_profile} s3 cp --cache-control 'max-age=31536000' --content-type 'text/css' --recursive --exclude '*' --include '*.css' ${var.website_dist_folder} s3://${aws_s3_bucket.website.bucket} && \
+aws --profile ${var.aws_profile} s3 cp --cache-control 'max-age=86400' --content-type 'text/html' --recursive --exclude '*' --include '*.html' ${var.website_dist_folder} s3://${aws_s3_bucket.website.bucket} && \
+aws --profile ${var.aws_profile} s3 cp --cache-control 'max-age=31536000' --recursive --exclude '*.js' --exclude '*.css' --exclude '*.html' ${var.website_dist_folder} s3://${aws_s3_bucket.website.bucket}
+EOT
   }
 }
