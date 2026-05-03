@@ -43,6 +43,14 @@ resource "aws_cloudfront_distribution" "website_distribution" {
     # look at your S3 bucket for changes once per day.
     default_ttl            = 86400
     max_ttl                = 604800
+
+    dynamic "lambda_function_association" {
+      for_each = var.sitemap_api_url != "" ? [1] : []
+      content {
+        event_type = "origin-request"
+        lambda_arn = aws_lambda_function.sitemap[0].qualified_arn
+      }
+    }
   }
 
   custom_error_response {
