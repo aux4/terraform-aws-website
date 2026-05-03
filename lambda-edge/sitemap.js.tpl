@@ -65,7 +65,7 @@ function generateSitemap(packages) {
 
   const entries = urls.map(function(entry) {
     let xml = "  <url>\n    <loc>" + entry.loc + "</loc>";
-    if (entry.lastmod) xml += "\n    <lastmod>" + entry.lastmod.split("T")[0] + "</lastmod>";
+    if (entry.lastmod) xml += "\n    <lastmod>" + entry.lastmod + "</lastmod>";
     if (entry.priority) xml += "\n    <priority>" + entry.priority + "</priority>";
     xml += "\n  </url>";
     return xml;
