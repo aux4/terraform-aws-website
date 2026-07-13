@@ -29,9 +29,3 @@ variable "route53_zone_id" {
   description = "The Route 53 zone ID"
   type        = string
 }
-
-variable "sitemap_api_url" {
-  description = "API URL to fetch packages for sitemap generation. Set to enable sitemap Lambda@Edge."
-  type        = string
-  default     = ""
-}
