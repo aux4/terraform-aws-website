@@ -45,14 +45,15 @@ resource "aws_cloudfront_distribution" "website_distribution" {
     max_ttl     = 604800
   }
 
-  # Package pages: inject per-package SEO metadata via Lambda@Edge on cache-miss.
-  # Same S3 origin as the default behavior; only the /r/public/packages/* routes
-  # run the origin-request function. All other routes fall through to the default
-  # behavior (and the SPA 404 -> /index.html fallback below) untouched.
+  # Optional edge behavior: run a consumer-provided origin-request Lambda@Edge
+  # function on the edge_lambda_path_pattern routes. Same S3 origin as the
+  # default behavior; only the matching routes run the function. All other routes
+  # fall through to the default behavior (and the SPA 404 -> /index.html fallback
+  # below) untouched.
   dynamic "ordered_cache_behavior" {
-    for_each = var.enable_package_seo_edge ? [1] : []
+    for_each = var.edge_lambda_enabled ? [1] : []
     content {
-      path_pattern     = "/r/public/packages/*"
+      path_pattern     = var.edge_lambda_path_pattern
       allowed_methods  = ["GET", "HEAD", "OPTIONS"]
       cached_methods   = ["GET", "HEAD"]
       target_origin_id = aws_s3_bucket.website.bucket_domain_name
@@ -67,7 +68,7 @@ resource "aws_cloudfront_distribution" "website_distribution" {
 
       lambda_function_association {
         event_type = "origin-request"
-        lambda_arn = aws_lambda_function.package_seo_edge[0].qualified_arn
+        lambda_arn = aws_lambda_function.edge_lambda[0].qualified_arn
       }
 
       viewer_protocol_policy = "redirect-to-https"
