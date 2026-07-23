@@ -35,3 +35,6 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Built Lambda@Edge artifact (produced at plan time by data.archive_file)
+lambda-edge/package-seo.zip

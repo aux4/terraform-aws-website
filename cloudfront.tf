@@ -25,7 +25,7 @@ resource "aws_cloudfront_distribution" "website_distribution" {
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id   = aws_s3_bucket.website.bucket_domain_name
+    target_origin_id = aws_s3_bucket.website.bucket_domain_name
 
     forwarded_values {
       query_string = false
@@ -41,14 +41,47 @@ resource "aws_cloudfront_distribution" "website_distribution" {
 
     # default cache time in seconds. This is 1 day, meaning CloudFront will only
     # look at your S3 bucket for changes once per day.
-    default_ttl            = 86400
-    max_ttl                = 604800
+    default_ttl = 86400
+    max_ttl     = 604800
+  }
+
+  # Package pages: inject per-package SEO metadata via Lambda@Edge on cache-miss.
+  # Same S3 origin as the default behavior; only the /r/public/packages/* routes
+  # run the origin-request function. All other routes fall through to the default
+  # behavior (and the SPA 404 -> /index.html fallback below) untouched.
+  dynamic "ordered_cache_behavior" {
+    for_each = var.enable_package_seo_edge ? [1] : []
+    content {
+      path_pattern     = "/r/public/packages/*"
+      allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+      cached_methods   = ["GET", "HEAD"]
+      target_origin_id = aws_s3_bucket.website.bucket_domain_name
+
+      forwarded_values {
+        query_string = false
+
+        cookies {
+          forward = "none"
+        }
+      }
+
+      lambda_function_association {
+        event_type = "origin-request"
+        lambda_arn = aws_lambda_function.package_seo_edge[0].qualified_arn
+      }
+
+      viewer_protocol_policy = "redirect-to-https"
+      compress               = "true"
+      min_ttl                = 0
+      default_ttl            = 86400
+      max_ttl                = 604800
+    }
   }
 
   custom_error_response {
-    error_code = 404
+    error_code         = 404
     response_page_path = "/index.html"
-    response_code = 200
+    response_code      = 200
   }
 
   logging_config {
@@ -71,14 +104,14 @@ resource "aws_cloudfront_distribution" "website_distribution" {
 }
 
 resource "aws_route53_record" "website_domain" {
-  name    = var.env == "prod" ? "${var.website_domain}." : "${var.env}.${var.website_domain}."
-  zone_id = var.route53_zone_id
-  type    = "A"
+  name            = var.env == "prod" ? "${var.website_domain}." : "${var.env}.${var.website_domain}."
+  zone_id         = var.route53_zone_id
+  type            = "A"
   allow_overwrite = true
 
   alias {
-    name    = aws_cloudfront_distribution.website_distribution.domain_name
-    zone_id = aws_cloudfront_distribution.website_distribution.hosted_zone_id
+    name                   = aws_cloudfront_distribution.website_distribution.domain_name
+    zone_id                = aws_cloudfront_distribution.website_distribution.hosted_zone_id
     evaluate_target_health = false
   }
 }
