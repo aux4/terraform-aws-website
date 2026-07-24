@@ -27,6 +27,15 @@ resource "aws_cloudfront_distribution" "website_distribution" {
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = aws_s3_bucket.website.bucket_domain_name
 
+    # Resolve directory-style URIs to their index.html so prerendered pages
+    # (e.g. /executors -> /executors/index.html) are served by the S3 REST origin,
+    # which has no index-document support. Missing files still fall back to
+    # /index.html via custom_error_response, so pure SPAs are unaffected.
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.directory_index.arn
+    }
+
     forwarded_values {
       query_string = false
 
