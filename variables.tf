@@ -85,3 +85,9 @@ variable "edge_lambda_path_pattern" {
   type        = string
   default     = ""
 }
+
+variable "edge_lambda_additional_path_patterns" {
+  description = "Extra CloudFront cache-behavior path patterns to attach the same edge Lambda to (e.g. [\"/sitemap.xml\"]). Each becomes its own ordered_cache_behavior wired to the same function."
+  type        = list(string)
+  default     = []
+}

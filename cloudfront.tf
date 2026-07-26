@@ -60,9 +60,9 @@ resource "aws_cloudfront_distribution" "website_distribution" {
   # fall through to the default behavior (and the SPA 404 -> /index.html fallback
   # below) untouched.
   dynamic "ordered_cache_behavior" {
-    for_each = var.edge_lambda_enabled ? [1] : []
+    for_each = var.edge_lambda_enabled ? toset(concat([var.edge_lambda_path_pattern], var.edge_lambda_additional_path_patterns)) : toset([])
     content {
-      path_pattern     = var.edge_lambda_path_pattern
+      path_pattern     = ordered_cache_behavior.value
       allowed_methods  = ["GET", "HEAD", "OPTIONS"]
       cached_methods   = ["GET", "HEAD"]
       target_origin_id = aws_s3_bucket.website.bucket_domain_name
