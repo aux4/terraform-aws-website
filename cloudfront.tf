@@ -27,6 +27,10 @@ resource "aws_cloudfront_distribution" "website_distribution" {
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = aws_s3_bucket.website.bucket_domain_name
 
+    # Attach the consumer-provided security headers / CSP policy (if any) so every
+    # response carries the configured Content-Security-Policy and related headers.
+    response_headers_policy_id = var.response_headers_policy_id != "" ? var.response_headers_policy_id : null
+
     # Resolve directory-style URIs to their index.html so prerendered pages
     # (e.g. /executors -> /executors/index.html) are served by the S3 REST origin,
     # which has no index-document support. Missing files still fall back to
@@ -66,6 +70,8 @@ resource "aws_cloudfront_distribution" "website_distribution" {
       allowed_methods  = ["GET", "HEAD", "OPTIONS"]
       cached_methods   = ["GET", "HEAD"]
       target_origin_id = aws_s3_bucket.website.bucket_domain_name
+
+      response_headers_policy_id = var.response_headers_policy_id != "" ? var.response_headers_policy_id : null
 
       forwarded_values {
         query_string = false

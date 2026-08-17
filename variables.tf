@@ -30,6 +30,18 @@ variable "route53_zone_id" {
   type        = string
 }
 
+# Optional CloudFront response headers policy.
+# When set, its ID is attached to every cache behavior so responses carry the
+# policy's security headers (e.g. Content-Security-Policy, Strict-Transport-Security,
+# X-Content-Type-Options, Referrer-Policy). The consumer owns the policy resource and
+# passes in its ID. Empty (default) leaves behaviors without an attached policy so
+# existing consumers are unaffected.
+variable "response_headers_policy_id" {
+  description = "CloudFront response headers policy ID to attach to all cache behaviors (security headers/CSP). Empty disables."
+  type        = string
+  default     = ""
+}
+
 # Optional Lambda@Edge (generic)
 # Attaches a consumer-provided origin-request Lambda@Edge function to a given
 # path pattern. Disabled by default so existing consumers are not forced to ship
